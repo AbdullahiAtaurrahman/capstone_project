@@ -1,0 +1,49 @@
+# Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+Active.ps1
+
+# Environment Variables and Secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+
+# IDEs and Text Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Databases (Local/Testing backups)
+*.sqlite3
+*.db
+*.sql
+*.dump
+
+# Logs
+*.log
+logs/
+
+
+TODO.md
