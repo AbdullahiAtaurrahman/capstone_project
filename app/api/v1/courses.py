@@ -1,25 +1,95 @@
-from typing import TYPE_CHECKING
-from app.core.db_async import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, DateTime
-from datetime import datetime
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.deps import get_async_db, require_admin
+from app.services.course_service import CourseService
+from app.schemas.courses import (
+    CourseCreate,
+    CourseUpdate,
+    CourseResponse,
+    PaginatedCourse,
+)
+from app.models.users import User
 
-if TYPE_CHECKING:
-    from app.models.enrollments import Enrollment
+router = APIRouter(prefix="/courses", tags=["Courses"])
 
 
-class Course(Base):
-    __tablename__ = "courses"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    title: Mapped[str] = mapped_column(String(100), nullable=False)
-    code: Mapped[str] = mapped_column(String(20), unique=True, index=True)
-    capacity: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(default=True)
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, default=None
-    )
+@router.get("/", response_model=PaginatedCourse)
+async def get_all_active_courses(
+    skip: int = 0,
+    limit: int = 10,
+    search: str | None = None,
+    db: AsyncSession = Depends(get_async_db),
+):
 
-    # relationship
-    enrollments: Mapped[list["Enrollment"]] = relationship(
-        "Enrollment", back_populates="course", lazy="selectin"
-    )
+    courses, total = await CourseService.get_all_active(db, skip, limit, search)
+    return {"items": courses, "total": total, "skip": skip, "limit": limit}
+
+
+@router.get("/admin/all", response_model=PaginatedCourse)
+async def get_all_courses(
+    skip: int = 0,
+    limit: int = 10,
+    search: str | None = None,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin),
+):
+
+    courses, total = await CourseService.get_all(db, skip, limit, search)
+    return {"items": courses, "total": total, "skip": skip, "limit": limit}
+
+
+@router.get("/{course_id}", response_model=CourseResponse)
+async def get_course_by_id(
+    course_id: int,
+    db: AsyncSession = Depends(get_async_db),
+):
+
+    return await CourseService.get_by_id(db, course_id)
+
+
+@router.post("/", response_model=CourseResponse, status_code=status.HTTP_201_CREATED)
+async def create_course(
+    data: CourseCreate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin),
+):
+    """Create a new course. Admin only."""
+    course = await CourseService.create(db, data)
+    await db.commit()
+    return course
+
+
+@router.put("/{course_id}", response_model=CourseResponse)
+async def update_course(
+    course_id: int,
+    data: CourseUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin),
+):
+
+    course = await CourseService.update(db, course_id, data)
+    await db.commit()
+    return course
+
+
+@router.delete("/{course_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_course(
+    course_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin),
+):
+
+    await CourseService.delete(db, course_id)
+    await db.commit()
+
+
+@router.patch("/{course_id}/toggle", response_model=CourseResponse)
+async def toggle_course_active(
+    course_id: int,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(require_admin),
+):
+
+    course = await CourseService.toggle_active(db, course_id)
+    await db.commit()
+    return course

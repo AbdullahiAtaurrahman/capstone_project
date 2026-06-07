@@ -1,25 +1,27 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from passlib.context import CryptContext
+from jose import jwt
+from datetime import datetime, timedelta, timezone
+from app.core.config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-class UserBase(BaseModel):
-    email: EmailStr
-    name: str
+def hash_password(plain: str) -> str:
+    return pwd_context.hash(plain)
 
 
-class UserCreate(UserBase):
-    password: str
-    role: str | None = None
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
 
 
-class UserUpdate(BaseModel):
-    bio: str | None = None
-    email: EmailStr | None = None
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-class UserRead(UserBase):
-    id: int
-    role: str
-    bio: str | None = None
-    is_active: bool
-
-    model_config = ConfigDict(from_attributes=True)
+def decode_token(token: str) -> dict:
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
