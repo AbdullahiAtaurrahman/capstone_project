@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.deps import get_current_active_user, get_async_db, rate_limit
@@ -23,7 +23,6 @@ async def me(current_user=Depends(get_current_active_user)):
 
 @router.post("/token", response_model=Token)
 async def login(
-    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_async_db),
     _: None = Depends(rate_limit),  # 5 attempts per 60s per IP
