@@ -43,7 +43,7 @@ tests/v1/            # Automated test suite
 ### Clone the Repository
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/AbdullahiAtaurrahman/capstone_project.git>
 cd CAPSTONE_PROJECT
 ```
 
@@ -64,6 +64,19 @@ docker compose up -d
 API will be available at: `http://localhost:8000`
 
 Interactive docs: `http://localhost:8000/docs`
+
+### Run Locally with Uvicorn
+
+If you want to start the app directly on your local machine without Docker, install dependencies into your virtual environment and run:
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Then open:
+
+- `http://localhost:8000`
+- `http://localhost:8000/docs`
 
 ---
 
