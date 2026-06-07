@@ -1,10 +1,9 @@
-from pydantic import BaseModel, EmailStr
-from datetime import datetime
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class UserBase(BaseModel):
-    name: str
     email: EmailStr
+    name: str
 
 
 class UserCreate(UserBase):
@@ -13,17 +12,14 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-    name: str | None = None
+    bio: str | None = None
+    email: EmailStr | None = None
 
 
 class UserRead(UserBase):
     id: int
     role: str
+    bio: str | None = None
     is_active: bool
-    deleted_at: datetime | None = None
 
-    model_config = {"from_attributes": True}
-
-
-class User(UserRead):
-    pass
+    model_config = ConfigDict(from_attributes=True)

@@ -19,7 +19,6 @@ Active.ps1
 # Environment Variables and Secrets (CRITICAL)
 .env
 .env.*
-!.env.example
 
 # IDEs and Text Editors
 .vscode/
@@ -44,6 +43,3 @@ ehthumbs.db
 # Logs
 *.log
 logs/
-
-
-TODO.md
