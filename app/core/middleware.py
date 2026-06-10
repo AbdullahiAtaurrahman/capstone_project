@@ -6,10 +6,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class RequestTimingMiddleware(BaseHTTPMiddleware):
-    """
-    Assigns a short correlation ID to every request, logs start/finish,
-    and adds X-Request-ID + X-Process-Time response headers.
-    """
 
     async def dispatch(self, request: Request, call_next):
         request_id = str(uuid.uuid4())[:8]

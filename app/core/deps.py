@@ -76,10 +76,7 @@ require_admin = require_role("admin")
 
 
 async def rate_limit(request: Request, max_calls: int = 5, window: int = 60):
-    """
-    Allow max_calls per client IP per window seconds.
-    Uses Redis for atomic increments so it works across multiple workers.
-    """
+
     redis = await get_redis()
     key = f"rate:{request.client.host}"
     calls = await redis.incr(key)
