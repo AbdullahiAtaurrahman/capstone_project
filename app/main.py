@@ -12,6 +12,11 @@ from app.api.v1 import health
 app = FastAPI(title="CAPSTONE_PROJECT API", version="1.0.0")
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "capstone_project", "api_base": "/api/v1"}
+
+
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(courses.router, prefix="/api/v1")
