@@ -1,183 +1,186 @@
 # Course Enrollment Platform API
 
-A secure, database-backed RESTful API built with FastAPI for managing a course enrollment platform. Implements JWT authentication, role-based access control (RBAC), PostgreSQL with async SQLAlchemy, Redis rate limiting, and comprehensive automated tests.
+A secure backend API built with FastAPI for course registration, enrollment, and user management.
 
----
+## Features
 
-## Tech Stack
+- JWT authentication
+- Role-based access control
+- Async PostgreSQL using SQLAlchemy
+- Redis-backed rate limiting
+- Docker Compose development setup
+- Alembic migrations
+- Pytest test suite
 
-- **FastAPI** — web framework
-- **PostgreSQL** — relational database
-- **SQLAlchemy (async)** — ORM
-- **Alembic** — database migrations
-- **Redis** — rate limiting
-- **JWT** — authentication
-- **Docker** — containerisation
-- **pytest** — automated testing
-
----
-
-## Project Structure
-
-```
-app/
-├── api/v1/          # Routers (auth, users, courses, enrollments)
-├── core/            # Config, security, deps, middleware, cache
-├── models/          # SQLAlchemy models
-├── repositories/    # Database access layer
-├── services/        # Business logic
-├── schemas/         # Pydantic request/response models
-alembic/             # Migration files
-tests/v1/            # Automated test suite
-```
-
----
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
 - Docker
 - Docker Compose
 
-### Clone the Repository
+### Required Dependencies
+
+The project installs these Python packages from `requirements.txt`:
+
+- `fastapi`
+- `uvicorn`
+- `SQLAlchemy`
+- `pydantic[email]`
+- `pydantic-settings`
+- `passlib[bcrypt]`
+- `python-jose`
+- `redis`
+- `slowapi`
+- `alembic`
+- `aiosqlite`
+- `email-validator`
+- `python-multipart`
+- `python-dotenv`
+- `pytest`
+- `pytest-asyncio`
+- `httpx`
+- `psycopg2-binary`
+- `asyncpg`
+- `psycopg[binary]`
+
+### Run with Docker
 
 ```bash
-git clone <https://github.com/AbdullahiAtaurrahman/capstone_project.git>
-cd CAPSTONE_PROJECT
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and fill in your values:
-
-```bash
+git clone https://github.com/AbdullahiAtaurrahman/capstone_project.git
+cd capstone_project
 cp .env.example .env
+docker compose up --build
 ```
 
-### Start the Application
-
-```bash
-docker compose up -d
-```
-
-API will be available at: `http://localhost:8000`
-
-Interactive docs: `http://localhost:8000/docs`
-
-### Run Locally with Uvicorn
-
-If you want to start the app directly on your local machine without Docker, install dependencies into your virtual environment and run:
-
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Then open:
+Open:
 
 - `http://localhost:8000`
 - `http://localhost:8000/docs`
 
----
+Live deployment:
 
-## Running Migrations
+- `https://capstone-project-8dn6.onrender.com`
+- `https://capstone-project-8dn6.onrender.com/docs`
+
+### Run Locally
+
+```bash
+python -m venv venv
+source venv/bin/activate    # Linux/macOS
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## Database Migrations
 
 ```bash
 docker compose exec api alembic upgrade head
 ```
 
-To create a new migration after model changes:
+After model changes:
 
 ```bash
-docker compose exec api alembic revision --autogenerate -m "your message"
+docker compose exec api alembic revision --autogenerate -m "<message>"
 docker compose exec api alembic upgrade head
 ```
 
----
-
-## Running Tests
-
-Tests run against a separate `capstone_project_test` database. Create it first:
+## Tests
 
 ```bash
 docker compose exec db psql -U postgres -c "CREATE DATABASE capstone_project_test;"
-```
-
-Then run the test suite:
-
-```bash
 docker compose exec api pytest tests/ -v
 ```
 
-> **Note:** Tests use a dedicated test database and do not affect your main database.
+## Project Structure
+
+```text
+app/
+├── api/v1/          # routers
+├── core/            # config, security, deps, middleware
+├── models/          # database models
+├── repositories/    # data access layer
+├── schemas/         # Pydantic models
+├── services/        # business logic
+alembic/             # migrations
+tests/               # automated tests
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and update values.
+
+Required variables include:
+
+- `DATABASE_URL`
+- `SECRET_KEY`
+- `ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `REDIS_URL`
+
+## API Documentation
+
+Interactive docs are available at:
+
+- `http://localhost:8000/docs`
+- `http://localhost:8000/redoc`
+
+## Notes
+
+- The app uses `EmailStr` in Pydantic schemas, so make sure `email-validator` is installed.
+- Rate limiting is enabled for login to prevent abuse.
 
 ---
 
-## API Endpoints
-
-### Authentication
-
-| Method | Endpoint                | Access        | Description              |
-| ------ | ----------------------- | ------------- | ------------------------ |
-| POST   | `/api/v1/auth/register` | Public        | Register a new user      |
-| POST   | `/api/v1/auth/token`    | Public        | Login and get JWT token  |
-| GET    | `/api/v1/auth/me`       | Authenticated | Get current user profile |
-
-### Users
-
-| Method | Endpoint             | Access        | Description      |
-| ------ | -------------------- | ------------- | ---------------- |
-| GET    | `/api/v1/users/me`   | Authenticated | Get own profile  |
-| GET    | `/api/v1/users/`     | Admin         | Get all users    |
-| GET    | `/api/v1/users/{id}` | Authenticated | Get user by ID   |
-| PUT    | `/api/v1/users/{id}` | Authenticated | Update user      |
-| DELETE | `/api/v1/users/{id}` | Admin         | Soft delete user |
-
-### Courses
-
-| Method | Endpoint                      | Access | Description                 |
-| ------ | ----------------------------- | ------ | --------------------------- |
-| GET    | `/api/v1/courses/`            | Public | Get all active courses      |
-| GET    | `/api/v1/courses/{id}`        | Public | Get course by ID            |
-| GET    | `/api/v1/courses/admin/all`   | Admin  | Get all courses             |
-| POST   | `/api/v1/courses/`            | Admin  | Create a course             |
-| PUT    | `/api/v1/courses/{id}`        | Admin  | Update a course             |
-| PATCH  | `/api/v1/courses/{id}/toggle` | Admin  | Toggle course active status |
-| DELETE | `/api/v1/courses/{id}`        | Admin  | Soft delete a course        |
-
-### Enrollments
-
-| Method | Endpoint                                    | Access  | Description                |
-| ------ | ------------------------------------------- | ------- | -------------------------- |
-| POST   | `/api/v1/enrollments/{course_id}`           | Student | Enroll in a course         |
-| DELETE | `/api/v1/enrollments/{course_id}`           | Student | Deregister from a course   |
-| GET    | `/api/v1/enrollments/`                      | Admin   | Get all enrollments        |
-| GET    | `/api/v1/enrollments/course/{course_id}`    | Admin   | Get enrollments by course  |
-| DELETE | `/api/v1/enrollments/admin/{enrollment_id}` | Admin   | Remove student from course |
+For API details and endpoint usage, use the FastAPI docs after starting the app.
 
 ---
 
-## Role-Based Access Control
+# 🤝 Contributing
 
-| Action                 | Student | Admin |
-| ---------------------- | ------- | ----- |
-| View courses           | ✅      | ✅    |
-| Enroll in course       | ✅      | ❌    |
-| Deregister from course | ✅      | ❌    |
-| Create course          | ❌      | ✅    |
-| Update course          | ❌      | ✅    |
-| Delete course          | ❌      | ✅    |
-| View all enrollments   | ❌      | ✅    |
+Contributions are welcome.
+
+## Steps
+
+1. Fork the repository
+
+2. Create a feature branch
+
+```bash
+git checkout -b feature-name
+```
+
+3. Commit changes
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push changes
+
+```bash
+git push origin feature-name
+```
+
+5. Open a Pull Request
 
 ---
 
-## Bonus Features
+# 📄 License
 
-- **Pagination & filtering** — all list endpoints support `skip`, `limit`, and `search`
-- **Soft deletes** — users and courses are soft-deleted (`deleted_at` timestamp)
-- **Audit logs** — enrollment actions are logged
-- **Rate limiting** — login endpoint limited to 5 attempts per 60 seconds per IP
+This project is licensed under the MIT License.
 
-## Live API
+---
 
-https://capstone-project-3kpl.onrender.com/docs
+# 👨‍💻 Author
+
+Ataur-rahman Abdullahi
+
+GitHub: https://github.com/AbdullahiAtaurrahman
+
+---
+
+# ⭐ Support
+
+If you found this project useful, consider giving it a star on GitHub.
