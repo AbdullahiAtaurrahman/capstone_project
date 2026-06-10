@@ -43,6 +43,6 @@ class UserService:
         user = await UserRepository.get_by_id(db, user_id)
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Course not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         await UserRepository.delete(db, user)
