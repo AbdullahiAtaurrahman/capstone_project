@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     REDIS_URL: str
 
     DATABASE_URL_ASYNC: str
-    # DATABASE_URL: str
     TEST_DATABASE_URL: str | None = None
 
     model_config = SettingsConfigDict(
