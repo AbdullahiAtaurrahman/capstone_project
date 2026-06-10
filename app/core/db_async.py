@@ -1,13 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
-from app.core.config import settings
 
-DATABASE_URL_ASYNC = settings.DATABASE_URL_ASYNC
+DATABASE_URL_ASYNC = "sqlite+aiosqlite:///./app.db"
+# PostgreSQL async: "postgresql+asyncpg://user:pass@localhost/db"
 
 engine = create_async_engine(
     DATABASE_URL_ASYNC,
     echo=True,
-    pool_pre_ping=True,
 )
 
 AsyncSessionLocal = sessionmaker(
